@@ -4,5 +4,7 @@
         <p>{{ object.content }}<br>
         {{ object.user }}<br>
         {{ object.timestamp|timesince }}<br></p>
+        {% empty %}
+        <p>No Tweets.</p>
     {% endfor %}
 {% endblock %}
