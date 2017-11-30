@@ -1,7 +1,4 @@
-{% extends 'base.html' %}
-{% block content %}
-    <form action="{% url 'tweet:list' %}" method="get">
-        <input type="text" name="q" placeholder="Search" value="{{ request.GET.q }}">
-        <input type="submit" value="Search">
-    </form>
-{% endblock %}
+<form class="form-inline my-2 my-lg-0" action="{% url 'tweet:list' %}" method="get">
+    <input class="form-control mr-sm-2" type="search" name="q" placeholder="Search" value="{{ request.GET.q }}">
+    <input class="btn btn-outline-success my-2 my-sm-0" type="submit" value="Search">
+</form>
