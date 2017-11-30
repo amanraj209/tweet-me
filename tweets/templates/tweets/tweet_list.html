@@ -8,6 +8,12 @@
             <h4>{{ request.user }}</h4>
         </div>
         <div class="col-sm-9">
+            {% if not request.GET.q %}
+                <div>
+                    {% include 'tweets/form.html' with form=create_form action_url=create_url btn_title='Tweet' %}
+                </div>
+                <hr>
+            {% endif %}
             {% for object in object_list %}
                 <div class="media">
                     {% if object.image %}
