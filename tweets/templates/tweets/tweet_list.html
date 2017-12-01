@@ -14,17 +14,22 @@
                 </div>
                 <hr>
             {% endif %}
+
+            <div id="tweet-container">
+
+            </div>
+
             {% for object in object_list %}
-                <div class="media">
-                    {% if object.image %}
-                    <img class="d-flex mr-3" src="..." alt="">
-                    {% endif %}
-                    <div class="media-body">
-                        {{ object.content }}<br>
-                        via {{ object.user }} | {{ object.timestamp|timesince }} ago | <a href="{{ object.get_absolute_url }}">View</a>
-                    </div>
-                </div>
-                <hr>
+{#                <div class="media">#}
+{#                    {% if object.image %}#}
+{#                    <img class="d-flex mr-3" src="..." alt="">#}
+{#                    {% endif %}#}
+{#                    <div class="media-body">#}
+{#                        {{ object.content }}<br>#}
+{#                        via {{ object.user }} | {{ object.timestamp|timesince }} ago | <a href="{{ object.get_absolute_url }}">View</a>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <hr>#}
                 {% empty %}
                 {% if request.GET.q %}
                 <p>No tweets found.</p>
@@ -34,4 +39,28 @@
             {% endfor %}
         </div>
     </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/api/tweet',
+                method: 'GET',
+                success: function (data) {
+                    $.each(data, function (key, value) {
+                        let tweetKey = key;
+                        let tweetUser = value.user;
+                        let tweetContent = value.content;
+                        $('#tweet-container').append(`<div class="media"><div class="media-body">${tweetContent}<br>via ${tweetUser.username} | <a href="#">View</a></div></div><hr>`);
+                    })
+                },
+                error: function (data) {
+                    console.log('error');
+                    console.log(data);
+                }
+            });
+        });
+    </script>
+
 {% endblock %}
