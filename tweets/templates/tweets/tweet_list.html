@@ -38,24 +38,35 @@
             let query = getParameterByName('q');
             let tweetList = [];
             
+            function attachTweet(tweetValue, prepend) {
+                let tweetUser = tweetValue.user;
+                let tweetContent = tweetValue.content;
+                let dateDisplay = tweetValue.display_date;
+                let timesince = tweetValue.timesince;
+                let tweetFormattedHtml = `
+                    <div class="media">
+                        <div class="media-body">
+                            ${tweetContent}<br>
+                            posted by <strong>${tweetUser.username}</strong><br>
+                            <em>${dateDisplay} | ${timesince}</em><br>
+                            <a href="#">View</a>
+                        </div>
+                    </div>
+                    <hr>`;
+                if (prepend) {
+                    $('#tweet-container').prepend(tweetFormattedHtml);
+                } else {
+                    $('#tweet-container').append(tweetFormattedHtml);
+                }
+            }
+            
             function parseTweets() {
                 if (tweetList == 0) {
                     $('#tweet-container').text(`No tweets currently found.`);
                 } else {
                     $.each(tweetList, function (key, value) {
-                    let tweetKey = key;
-                    let tweetUser = value.user;
-                    let tweetContent = value.content;
-                    $('#tweet-container').append(`
-                        <div class="media">
-                            <div class="media-body">
-                                ${tweetContent}<br>
-                                via ${tweetUser.username} | <a href="#">View</a>
-                            </div>
-                        </div>
-                        <hr>`
-                    );
-                });
+                        attachTweet(value);
+                    });
                 }
             }
 
@@ -79,23 +90,52 @@
 
             fetchTweets();
 
+            let charsStart = 140, charsCurrent = 0;
+
+
+            $('#tweet-form').append(`<span id='tweetCharsLeft'>${charsStart}</span>`);
+
+            $('#tweet-form textarea').keyup(function (event) {
+                let tweetValue = $(this).val();
+                charsCurrent = charsStart - tweetValue.length;
+
+                let spanChars = $('#tweetCharsLeft');
+                spanChars.text(charsCurrent);
+
+                if (charsCurrent > 0) {
+                    spanChars.removeClass('text-warning');
+                    spanChars.removeClass('text-danger');
+                } else if (charsCurrent === 0) {
+                    spanChars.removeClass('text-danger');
+                    spanChars.addClass('text-warning');
+                } else if (charsCurrent < 0) {
+                    spanChars.removeClass('text-warning');
+                    spanChars.addClass('text-danger');
+                }
+            });
+
             $('#tweet-form').submit(function (event) {
                 event.preventDefault();
                 let this_ = $(this);
                 let formData = this_.serialize();
-                $.ajax({
-                    url: '/api/tweet/create/',
-                    method: 'POST',
-                    data: formData,
-                    success: function (data) {
-                        fetchTweets();
-                    },
-                    error: function (data) {
-                        console.log('error');
-                        console.log(data.statusText);
-                        console.log(data.status);
-                    }
-                });
+                if (charsCurrent >= 0) {
+                    $.ajax({
+                        url: '/api/tweet/create/',
+                        method: 'POST',
+                        data: formData,
+                        success: function (data) {
+                            this_.find('input[type=text], textarea').val('');
+                            attachTweet(data, true);
+                        },
+                        error: function (data) {
+                            console.log('error');
+                            console.log(data.statusText);
+                            console.log(data.status);
+                        }
+                    });
+                } else {
+                    console.log('Cannot send, tweet too long!');
+                }
             });
         });
     </script>
