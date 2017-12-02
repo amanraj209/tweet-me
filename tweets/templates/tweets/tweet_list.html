@@ -16,6 +16,7 @@
             {% endif %}
 
             <div id="tweet-container"></div>
+            <a href="#" id="loadmore" class="text-primary"> Load More Tweets</a>
         </div>
     </div>
 {% endblock %}
@@ -37,6 +38,7 @@
 
             let query = getParameterByName('q');
             let tweetList = [];
+            let nextTweetUrl;
             
             function attachTweet(tweetValue, prepend) {
                 let tweetUser = tweetValue.user;
@@ -70,15 +72,26 @@
                 }
             }
 
-            function fetchTweets() {
+            function fetchTweets(url) {
+                let fetchUrl;
+                if (!url) {
+                    fetchUrl = '/api/tweet/';
+                } else {
+                    fetchUrl = url;
+                }
                 $.ajax({
-                    url: '/api/tweet/',
+                    url: fetchUrl,
                     method: 'GET',
                     data: {
                         'q': query
                     },
                     success: function (data) {
-                        tweetList = data;
+                        tweetList = data.results;
+                        if (data.next) {
+                            nextTweetUrl = data.next;
+                        } else {
+                            $('#loadmore').css('display', 'none');
+                        }
                         parseTweets();
                     },
                     error: function (data) {
@@ -89,6 +102,13 @@
             }
 
             fetchTweets();
+
+            $('#loadmore').click(function (event) {
+                event.preventDefault();
+                if (nextTweetUrl) {
+                    fetchTweets(nextTweetUrl);
+                }
+            });
 
             let charsStart = 140, charsCurrent = 0;
 
